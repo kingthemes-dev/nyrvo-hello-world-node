@@ -30,6 +30,19 @@ const server = http.createServer((req, res) => {
     return;
   }
 
+  // Safe env-injection probe for Ticket 008 live validation.
+  // Never returns secret plaintext or the full process.env map.
+  if (req.method === 'GET' && path === '/config') {
+    res.writeHead(200);
+    res.end(
+      JSON.stringify({
+        message: process.env.NYRVO_TEST_MESSAGE ?? null,
+        secretConfigured: Boolean(process.env.NYRVO_TEST_SECRET),
+      }),
+    );
+    return;
+  }
+
   res.writeHead(404);
   res.end(JSON.stringify({ error: 'Not found' }));
 });
